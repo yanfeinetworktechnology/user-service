@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto;
+
+
+service Token {
+	rpc Check(TokenRequest) returns (CheckResponse) {}
+}
+
+message TokenRequest {
+	string token = 1;
+}
+
+message CheckResponse {
+	int64 user_id = 1;
+	int64 status = 2;
+}

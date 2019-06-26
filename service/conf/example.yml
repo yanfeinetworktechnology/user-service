@@ -1,0 +1,15 @@
+---
+storage:
+  mysql:
+    user: root
+    password: root
+    host: localhost
+    port: 3306
+    database: user
+    max_idle_conns: 30
+    max_open_conns: 100
+    timezone: Asia%2FShanghai
+    retry_interval: 20
+service:
+  address: ":50001"
+salt: 666

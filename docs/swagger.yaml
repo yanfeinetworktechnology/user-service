@@ -1,0 +1,51 @@
+basePath: '{{.BasePath}}'
+definitions:
+  model.LoginRequest:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    type: object
+  model.Message:
+    properties:
+      data:
+        type: object
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: '{{.Host}}'
+info:
+  contact: {}
+  description: '{{.Description}}'
+  license: {}
+  title: YANFEI-USER API
+  version: 0.0.1
+paths:
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 统一用户登录
+      parameters:
+      - description: 用户登录信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Message'
+            type: object
+      summary: 统一用户登录
+      tags:
+      - 用户相关
+swagger: "2.0"
