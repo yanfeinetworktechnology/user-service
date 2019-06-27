@@ -23,6 +23,7 @@ import (
 func migrate(db *gorm.DB) {
 	db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_bin auto_increment=1")
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Person{})
 }
 
 // init 在 main 之前执行
@@ -61,6 +62,7 @@ func main() {
 	// middleware
 	r.Use(middleware.ErrorHandling())
 	r.Use(middleware.MaintenanceHandling())
+	r.Use(middleware.TokenHandling())
 
 	// swagger router
 	if viper.GetBool("basic.debug") {
@@ -69,6 +71,7 @@ func main() {
 
 	// 路由
 	r.POST("/user/login", controller.Login)
+	r.POST("/certification/person", controller.CertificationPerson)
 
 	r.Run("0.0.0.0:" + viper.GetString("basic.port"))
 }

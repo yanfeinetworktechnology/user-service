@@ -16,6 +16,17 @@ definitions:
       status:
         type: integer
     type: object
+  model.PersonRequest:
+    properties:
+      hometown:
+        type: string
+      phone:
+        type: string
+      real_name:
+        type: string
+      sex:
+        type: string
+    type: object
 host: '{{.Host}}'
 info:
   contact: {}
@@ -24,6 +35,35 @@ info:
   title: YANFEI-USER API
   version: 0.0.1
 paths:
+  /certification/person:
+    post:
+      consumes:
+      - application/json
+      description: 个人账号认证
+      parameters:
+      - description: token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 个人认证信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.PersonRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Message'
+            type: object
+      summary: 个人账号认证
+      tags:
+      - 认证相关
   /user/login:
     post:
       consumes:

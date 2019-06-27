@@ -40,5 +40,6 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, model.Message{
 		Data: token,
+		Msg:  "登录成功",
 	})
 }
