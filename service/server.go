@@ -35,7 +35,7 @@ func (s *server) Check(ctx context.Context, in *pb.TokenRequest) (*pb.CheckRespo
 	db := base_common.GetMySQL()
 	userID := claims.UserID
 	var existUser model.User
-	err = db.Where("id = ?", userID).First(&existUser).Error
+	err = db.First(&existUser, userID).Error
 
 	if err != nil {
 		return &pb.CheckResponse{Status: -3}, nil

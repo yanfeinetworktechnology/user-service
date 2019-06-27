@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	base_common "base_service/common"
 	"regexp"
 	"user_service/common"
+	"user_service/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,10 +12,11 @@ import (
 // TokenHandling 中间件，检查token
 func TokenHandling() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var whiteList = []string{"/docs", "/user/login"}
+		var tokenWhiteList = []string{"/docs", "/user/login"}
+		var certificationWhiteList = []string{"/certification/person"}
 		var requestURL = c.Request.RequestURI
 
-		for _, v := range whiteList {
+		for _, v := range tokenWhiteList {
 			match, _ := regexp.MatchString(v, requestURL)
 			if match {
 				c.Next()
@@ -38,6 +41,31 @@ func TokenHandling() gin.HandlerFunc {
 		}
 
 		if common.FuncHandler(c, err != common.ErrTokenInvalid, true, common.TokenInvalid) {
+			c.Abort()
+			return
+		}
+
+		// 检查是否需要认证，不需要则直接通过
+		for _, v := range certificationWhiteList {
+			match, _ := regexp.MatchString(v, requestURL)
+			if match {
+				c.Set("claims", claims)
+				c.Next()
+				return
+			}
+		}
+
+		// 检查认证情况
+		db := base_common.GetMySQL()
+		userID := claims.UserID
+		var existUser model.User
+		err = db.First(&existUser, userID).Error
+
+		if common.FuncHandler(c, err, nil, common.TokenInvalid) {
+			c.Abort()
+			return
+		}
+		if common.FuncHandler(c, existUser.InfoID != 0, true, common.NoCertification) {
 			c.Abort()
 			return
 		}

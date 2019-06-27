@@ -2,7 +2,6 @@ package controller
 
 import (
 	base_common "base_service/common"
-	"fmt"
 	"net/http"
 	"user_service/common"
 	"user_service/model"
@@ -36,36 +35,48 @@ func CertificationPerson(c *gin.Context) {
 	if common.FuncHandler(c, c.BindJSON(&personRequest), nil, common.ParameterError) {
 		return
 	}
-	fmt.Println(personRequest)
 
 	db := base_common.GetMySQL()
 	tx := db.Begin()
 
-	var newPerson model.Person
-	newPerson.RealName = personRequest.RealName
-	newPerson.Sex = personRequest.Sex
-	newPerson.Phone = personRequest.Phone
-	newPerson.HomeTown = personRequest.HomeTown
-
-	err := db.Create(&newPerson).Error
-	if common.FuncHandler(c, err, nil, common.DatabaseError) {
-		tx.Rollback()
-		return
-	}
-
 	var existUser model.User
 
-	err = db.First(&existUser, userID).Error
+	err := db.First(&existUser, userID).Error
 	if common.FuncHandler(c, err, nil, common.DatabaseError) {
 		tx.Rollback()
 		return
 	}
 
-	updateData := map[string]interface{}{"role": Person, "info_id": newPerson.ID}
-	err = tx.Model(&existUser).Updates(updateData).Error
-	if common.FuncHandler(c, err, nil, common.DatabaseError) {
-		tx.Rollback()
-		return
+	// 之前没有实名信息，直接插入新的
+	if existUser.InfoID == 0 {
+		var newPerson model.Person
+		newPerson.RealName = personRequest.RealName
+		newPerson.Sex = personRequest.Sex
+		newPerson.Phone = personRequest.Phone
+		newPerson.Hometown = personRequest.Hometown
+
+		err = db.Create(&newPerson).Error
+		if common.FuncHandler(c, err, nil, common.DatabaseError) {
+			tx.Rollback()
+			return
+		}
+
+		updateData := map[string]interface{}{"role": Person, "info_id": newPerson.ID}
+		err = tx.Model(&existUser).Updates(updateData).Error
+		if common.FuncHandler(c, err, nil, common.DatabaseError) {
+			tx.Rollback()
+			return
+		}
+	} else {
+		var existPerson model.Person
+		err = db.First(&existPerson, existUser.InfoID).Error
+
+		updateData := map[string]interface{}{"real_name": existPerson.RealName, "sex": existPerson.Sex, "homwtown": existPerson.Hometown, "phone": existPerson.Phone}
+		err = tx.Model(&existPerson).Updates(updateData).Error
+		if common.FuncHandler(c, err, nil, common.DatabaseError) {
+			tx.Rollback()
+			return
+		}
 	}
 
 	tx.Commit()
